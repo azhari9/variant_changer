@@ -167,6 +167,33 @@ VariantChanger/fast:
 	$(MAKE) -f CMakeFiles/VariantChanger.dir/build.make CMakeFiles/VariantChanger.dir/build
 .PHONY : VariantChanger/fast
 
+ipc_test_app.o: ipc_test_app.c.o
+
+.PHONY : ipc_test_app.o
+
+# target to build an object file
+ipc_test_app.c.o:
+	$(MAKE) -f CMakeFiles/VariantChanger.dir/build.make CMakeFiles/VariantChanger.dir/ipc_test_app.c.o
+.PHONY : ipc_test_app.c.o
+
+ipc_test_app.i: ipc_test_app.c.i
+
+.PHONY : ipc_test_app.i
+
+# target to preprocess a source file
+ipc_test_app.c.i:
+	$(MAKE) -f CMakeFiles/VariantChanger.dir/build.make CMakeFiles/VariantChanger.dir/ipc_test_app.c.i
+.PHONY : ipc_test_app.c.i
+
+ipc_test_app.s: ipc_test_app.c.s
+
+.PHONY : ipc_test_app.s
+
+# target to generate assembly for a file
+ipc_test_app.c.s:
+	$(MAKE) -f CMakeFiles/VariantChanger.dir/build.make CMakeFiles/VariantChanger.dir/ipc_test_app.c.s
+.PHONY : ipc_test_app.c.s
+
 sw_update.o: sw_update.c.o
 
 .PHONY : sw_update.o
@@ -234,6 +261,9 @@ help:
 	@echo "... install/strip"
 	@echo "... install/local"
 	@echo "... edit_cache"
+	@echo "... ipc_test_app.o"
+	@echo "... ipc_test_app.i"
+	@echo "... ipc_test_app.s"
 	@echo "... sw_update.o"
 	@echo "... sw_update.i"
 	@echo "... sw_update.s"

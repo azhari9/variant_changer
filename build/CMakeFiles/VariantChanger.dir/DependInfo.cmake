@@ -4,6 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
+  "/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/ipc_test_app.c" "/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/VariantChanger.dir/ipc_test_app.c.o"
   "/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/sw_update.c" "/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/VariantChanger.dir/sw_update.c.o"
   "/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/variant_changer.c" "/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/VariantChanger.dir/variant_changer.c.o"
   )

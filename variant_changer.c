@@ -2,9 +2,8 @@
  * Variant changer through IPC
  * Author : Muhammad Al Azhari 
 */
-
-
 #include <variant_changer.h>
+unsigned char *Gdbus_data;
 
 void Usage(char *filename) {
 	printf("Usage: %s <file> <string>\n", filename);
@@ -71,11 +70,6 @@ void CreateDbusConnection_Type_Array(unsigned char arr[], int msg_length, char *
 	dbus_connection_send(connection, message, NULL);
 	dbus_connection_flush(connection);
 
-	//for(i=0; i<msg_length; i++)
-	//{
-	//	fprintf(stderr, "DBUS Message Send:%s size:%d DBUS_data[%d]:[%#x]\n",msg_name,msg_length,i,DBuff_data[i]);
-	//}
-	//fprintf(stderr, "\n");
 	FUNCTION_OUT();
 }
 
@@ -149,6 +143,7 @@ unsigned char *MonitorDbusConnection_Type_Array(int bufferSize, char *msg_name)
 			// free the message
 			#endif
 			dbus_message_unref(message);
+			
 			break;
 		}
 
@@ -157,12 +152,112 @@ unsigned char *MonitorDbusConnection_Type_Array(int bufferSize, char *msg_name)
 	  {
 		  count++;
 		   #ifdef DEBUG
-		  printf("NOT RECEIVE [%d]\n",count);
+		  printf("%s NOT RECEIVE [%d]\n",__func__,count);
 		  #endif
 	  }
    }
    FUNCTION_OUT();
    return pBuffer;
+}
+
+unsigned char MonitorDbusConnection_Type_Byte(unsigned char clock[],char *msg_name)
+{
+	FUNCTION_IN();
+	DBusMessage *message;
+	DBusConnection *connection;
+	DBusError error;
+	dbus_error_init (&error);
+	unsigned char *Buffer;
+
+	
+	int i,count,ret;
+	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
+	if(!connection)
+	{
+		dbus_error_free (&error);
+		return;
+	}
+
+
+	// request our name on the bus and check for errors
+   ret = dbus_bus_request_name(connection, "clarion.brace.ipc", DBUS_NAME_FLAG_REPLACE_EXISTING , &error);
+   if (dbus_error_is_set(&error)) { 
+      fprintf(stderr, "Name Error (%s)\n", error.message);
+      dbus_error_free(&error); 
+   }
+
+   // add a rule for which messages we want to see
+   dbus_bus_add_match(connection, "type='signal',interface='clarion.brace.ipc'", &error); // see signals from the given interface
+   dbus_connection_flush(connection);
+   if (dbus_error_is_set(&error)) { 
+      fprintf(stderr, "Match Error (%s)\n", error.message);
+     // exit(1); 
+   }
+   #ifdef DEBUG
+   printf("Match rule sent\n");
+   #endif
+	 while (count < 10) {
+
+      // non blocking read of the next available message
+      dbus_connection_read_write(connection, 0);
+      message = dbus_connection_pop_message(connection);
+
+      // loop again if we haven't read a message
+      if (NULL == message) { 
+         usleep(100);
+         continue;
+      }
+
+      // check if the message is a signal from the correct interface and with the correct name
+      if (dbus_message_is_signal(message, "clarion.brace.ipc", msg_name)) 
+	  {
+		dbus_message_get_args(message, &error,DBUS_TYPE_BYTE, &clock[0],
+											DBUS_TYPE_BYTE,&clock[1],
+											DBUS_TYPE_BYTE,&clock[2],
+											DBUS_TYPE_BYTE,&clock[3],
+											DBUS_TYPE_BYTE,&clock[4],
+											DBUS_TYPE_BYTE,&clock[5],
+											DBUS_TYPE_BYTE,&clock[6], 
+											DBUS_TYPE_INVALID);
+		if (dbus_error_is_set(&error))
+		{
+			fprintf(stderr,"Message arguments are not extracted correctly: %s", error.message);
+			dbus_error_free(&error);
+		}
+		else
+		{
+			#ifdef DEBUG
+			printf("Buffer : %d:%d:%d %d/%d/%d%d\n",clock[0],clock[1],clock[2],clock[3],clock[4],clock[5],clock[6]);
+			#endif
+			clock[0]=clock[0]+8;
+			switch(clock[0]){
+				case 24:clock[0] = 0;break;
+				case 25:clock[0] = 1;break;
+				case 26:clock[0] = 2;break;
+				case 27:clock[0] = 3;break;
+				case 28:clock[0] = 4;break;
+				case 29:clock[0] = 5;break;
+				case 30:clock[0] = 6;break;
+				case 31:clock[0] = 7;break;
+			};
+			
+			dbus_message_unref(message);
+			break;
+		}
+
+      }
+	  else
+	  {
+		  count++;
+		   #ifdef DEBUG
+		  printf("%s NOT RECEIVE [%d]\n",__func__,count);
+		  dbus_message_unref(message);
+		  #endif
+	  }
+   }
+   FUNCTION_OUT();
+
+   return 0;
 }
 
 void ucase(char s[]) {
@@ -294,7 +389,11 @@ void variant_info(char *fname,int lineNumber)
 	int current_var;
 	
 	current_var = lineNumber+variant_id-1;
+	#ifdef CURSOR_CTRL
+	system("clear && printf '\e[3J'");
+	#else
 	system("clear");
+	#endif
 	
 	printf(ANSI_COLOR_RED   "Creating variant will automatically delete snapshot and re-create the snapshot image!"     ANSI_COLOR_RESET "\n" );
 	printf(ANSI_COLOR_RED   "Current vehicle oem : %s"     ANSI_COLOR_RESET "\n",oem_info);
@@ -498,15 +597,21 @@ int main( int argc, char **argv)
 	char yes_no;
 	char *setSoftwareVersion_name = "R_SOFTVERS";
 	char *resSoftwareVersion_name = "S_SOFTVERS";
+	char *resCLOCK = "S_GET_CLOCK_SET";
 	unsigned char Sdbus_data[5];
 	int rlen=5,glen=1;
 	int update = 0;
-	
+	int info = 0 ;
+	unsigned char clock_show[7];
 	if (argc == 2) {
       //to update software
-	  if(0 == strcmp(argv[1], "update"))
+	  if(0 == strcmp(argv[1], "pp_update"))
 	   {
 		   update = 1;
+	   }
+	   else if(0 == strcmp(argv[1], "pp_info"))
+	   {
+		   info = 1;
 	   }
    }
    else
@@ -518,18 +623,23 @@ int main( int argc, char **argv)
 	variant_id = get_variant();
 	Sdbus_data[0]=1;
 	CreateDbusConnection_Type_Array(Sdbus_data,glen,setSoftwareVersion_name);
-	unsigned char *Gdbus_data = MonitorDbusConnection_Type_Array(rlen,resSoftwareVersion_name);
+	Gdbus_data = MonitorDbusConnection_Type_Array(rlen,resSoftwareVersion_name);
 	
 		if( oem == -1)
 		{
+			#ifdef CURSOR_CTRL
+			system("clear && printf '\e[3J'");
+			system("printf '\e[?25h'");
+			#else
 			system("clear");
+			#endif
 			printf("\n\n");
 			VAR_INFO_G("        Variant Tools V1.0      \n");
 			VAR_INFO_Y(" ===============================\n");
 			VAR_INFO_G(" WELCOME To Variant Changer tool\n");
 			VAR_INFO_Y(" ===============================\n\n");
-			VAR_INFO_G(" PP Software Vesion  :: "ANSI_COLOR_MAGENTA"%d.%d\n",Gdbus_data[i+2],Gdbus_data[i+3]);
-			VAR_INFO_G(" Hardware Vesion     :: "ANSI_COLOR_MAGENTA"%d.%d\n",Gdbus_data[i],Gdbus_data[i+1]);
+			VAR_INFO_G(" PP Software Version  :: "ANSI_COLOR_MAGENTA"%d.%d\n",Gdbus_data[2],Gdbus_data[3]);
+			VAR_INFO_G(" Hardware Version     :: "ANSI_COLOR_MAGENTA"%d.%d\n\n",Gdbus_data[0],Gdbus_data[1]);
 			VAR_INFO_G(" Current OEM name    :: "ANSI_COLOR_MAGENTA"Not Availabe\n");
 			VAR_INFO_G(" Current OEM No.     :: "ANSI_COLOR_MAGENTA"Not Availabe\n");
 			VAR_INFO_G(" Current Variant No. :: "ANSI_COLOR_MAGENTA"%d\n",variant_id);
@@ -537,14 +647,19 @@ int main( int argc, char **argv)
 		}
 		else
 		{
+			#ifdef CURSOR_CTRL
+			system("clear && printf '\e[3J'");
+			system("printf '\e[?25h'");
+			#else
 			system("clear");
+			#endif
 			printf("\n\n");
 			VAR_INFO_G("        Variant Tools V1.0      \n");
 			VAR_INFO_Y(" ===============================\n");
 			VAR_INFO_G(" WELCOME To Variant Changer tool\n");
 			VAR_INFO_Y(" ===============================\n\n");
-			VAR_INFO_G(" PP Software Vesion  :: "ANSI_COLOR_MAGENTA"%d.%d\n",Gdbus_data[i+2],Gdbus_data[i+3]);
-			VAR_INFO_G(" Hardware Vesion     :: "ANSI_COLOR_MAGENTA"%d.%d\n",Gdbus_data[i],Gdbus_data[i+1]);
+			VAR_INFO_G(" PP Software Version  :: "ANSI_COLOR_MAGENTA"%d.%d\n",Gdbus_data[2],Gdbus_data[3]);
+			VAR_INFO_G(" Hardware Version     :: "ANSI_COLOR_MAGENTA"%d.%d\n\n",Gdbus_data[0],Gdbus_data[1]);
 			VAR_INFO_G(" Current OEM name    :: "ANSI_COLOR_MAGENTA"%s",oem_info);
 			VAR_INFO_G(" Current OEM No.     :: "ANSI_COLOR_MAGENTA"%d\n",oem);
 			VAR_INFO_G(" Current Variant No. :: "ANSI_COLOR_MAGENTA"%d\n",variant_id);
@@ -562,6 +677,10 @@ int main( int argc, char **argv)
 				{
 					return ret;
 				}
+			}
+			else if(info == 1)
+			{
+				init_ipc_test_app();
 			}
 			else
 			{

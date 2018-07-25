@@ -17,7 +17,9 @@ include_directories(./)
 
 SET(sources 	variant_changer.c
 		variant_changer.h
-		sw_update.c)
+		sw_update.c
+		ipc_test_app.c
+   )
 
 #SET(includes 	)
 

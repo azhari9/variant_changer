@@ -16,6 +16,9 @@
 #include <string.h>
 #include <memory.h>
 #include <dirent.h>
+#include <termios.h>
+#include <pthread.h>
+#include <signal.h>
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -29,13 +32,14 @@
 //#define VAR_INFO_G(fmt, args...) printf(ANSI_COLOR_GREEN  "  " fmt "\n" ANSI_COLOR_RESET,##args)
 //#define VAR_INFO_Y(fmt, args...) printf(ANSI_COLOR_YELLOW "  " fmt "\n" ANSI_COLOR_RESET,##args)
 
-#define VAR_INFO(fmt, args...) printf("\t\t\t" fmt ,##args)
+#define VAR_INFO(fmt, args...) printf("  " fmt ,##args)
 #define VAR_INFO_G(fmt, args...) printf(ANSI_COLOR_GREEN  "  " fmt ANSI_COLOR_RESET,##args)
 #define VAR_INFO_C(fmt, args...) printf(ANSI_COLOR_CYAN  "  " fmt ANSI_COLOR_RESET,##args)
 #define VAR_INFO_M(fmt, args...) printf(ANSI_COLOR_MAGENTA  "  " fmt ANSI_COLOR_RESET,##args)
 #define VAR_INFO_Y(fmt, args...) printf(ANSI_COLOR_YELLOW  "  " fmt ANSI_COLOR_RESET,##args)
 #define VAR_INFO_R(fmt, args...) printf(ANSI_COLOR_RED  "  " fmt ANSI_COLOR_RESET,##args)
 //#define DEBUG
+#define CURSOR_CTRL
 #ifdef DEBUG 
 #define FUNCTION_IN(fmt, args...) printf("FUNCTION_IN " "%s\n" fmt,__func__,##args)
 #define FUNCTION_OUT(fmt, args...) printf("FUNCTION_OUT " "%s\n" fmt,__func__,##args)
@@ -47,7 +51,9 @@
 extern void CreateDbusConnection_Type_String(char *string,char *msg_name);
 extern void CreateDbusConnection_Type_Array(unsigned char arr[], int msg_length, char *msg_name);
 extern unsigned char *MonitorDbusConnection_Type_Array(int bufferSize, char *msg_name);
+extern unsigned char MonitorDbusConnection_Type_Byte(unsigned char clock[],char *msg_name);
 extern int pp_sw_update(void);
-
+extern unsigned char *Gdbus_data;
+extern void init_ipc_test_app(void);
 
 #endif

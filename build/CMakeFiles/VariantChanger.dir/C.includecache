@@ -37,6 +37,16 @@ memory.h
 -
 dirent.h
 -
+termios.h
+-
+pthread.h
+-
+signal.h
+-
+
+/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/ipc_test_app.c
+variant_changer.h
+-
 
 /home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/sw_update.c
 variant_changer.h
