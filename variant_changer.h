@@ -50,10 +50,10 @@
 
 extern void CreateDbusConnection_Type_String(char *string,char *msg_name);
 extern void CreateDbusConnection_Type_Array(unsigned char arr[], int msg_length, char *msg_name);
-extern unsigned char *MonitorDbusConnection_Type_Array(int bufferSize, char *msg_name);
+extern unsigned char MonitorDbusConnection_Type_Array(unsigned char Buffer[],int bufferSize, char *msg_name);
 extern unsigned char MonitorDbusConnection_Type_Byte(unsigned char clock[],char *msg_name);
 extern int pp_sw_update(void);
-extern unsigned char *Gdbus_data;
+extern unsigned char Gdbus_data[5];
 extern void init_ipc_test_app(void);
 
 #endif

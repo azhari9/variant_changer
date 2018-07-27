@@ -1,6 +1,6 @@
 #include <variant_changer.h>
 
-unsigned char *gSP_INPUT;
+unsigned char gSP_INPUT[5];
 unsigned char gILLU;
 unsigned char gVariant;
 unsigned char gModel;
@@ -33,7 +33,7 @@ void *speed_input_monitor( void *arg)
 	
 	while(thread_killer){
 		
-		gSP_INPUT = MonitorDbusConnection_Type_Array(slen,resSP_INPUT);
+		MonitorDbusConnection_Type_Array(&gSP_INPUT[0],slen,resSP_INPUT);
 		msleep(2);
 		
 	}
@@ -69,18 +69,18 @@ void pp_version(void)
 	char *setSoftwareVersion_name = "R_SOFTVERS";
 	char *resSoftwareVersion_name = "S_SOFTVERS";
 	int slen=5,i;
-	unsigned char *sw_ver;
+	unsigned char sw_ver[5];
 	unsigned char Sdbus_data[5];
 	
 	Sdbus_data[0]=1;
 	
 	CreateDbusConnection_Type_Array(Sdbus_data,1,setSoftwareVersion_name);
-	sw_ver = MonitorDbusConnection_Type_Array(slen,resSoftwareVersion_name);
+	MonitorDbusConnection_Type_Array(&version[0],slen,resSoftwareVersion_name);
 	
-	for(i = 0 ; i < 5; i++)
-	{
-		version[i] = sw_ver[i];
-	}
+	// for(i = 0 ; i < 5; i++)
+	// {
+		// version[i] = sw_ver[i];
+	// }
 	
 	FUNCTION_OUT();
 }
@@ -91,13 +91,13 @@ void pp_variant(void)
 	char *getVariant = "R_GET_VEHICLE_VARIANT";
 	char *resVariant = "S_GET_VEHICLE_VARIANT";
 	int i;
-	unsigned char *variant;
+	unsigned char variant[5];
 	unsigned char buff[5];
 	
 	buff[0]=1;
 	
 	CreateDbusConnection_Type_Array(buff,1,getVariant);
-	variant = MonitorDbusConnection_Type_Array(1,resVariant);
+	MonitorDbusConnection_Type_Array(&variant[0],1,resVariant);
 	
 	gVariant=variant[0];
 	
@@ -111,13 +111,13 @@ void pp_model(void)
 	char *getModel = "R_DM_GET_MODEL_VARIANT";
 	char *resModel = "S_DM_GET_MODEL_VARIANT";
 	int i;
-	unsigned char *model;
+	unsigned char model[5];
 	unsigned char buff[5];
 	
 	buff[0]=1;
 	
 	CreateDbusConnection_Type_Array(buff,1,getModel);
-	model = MonitorDbusConnection_Type_Array(1,resModel);
+	MonitorDbusConnection_Type_Array(&model[0],1,resModel);
 	
 	gModel=model[0];
 	
@@ -128,7 +128,7 @@ void pp_model(void)
 void *illumination_sts( void *arg)
 {
 	FUNCTION_IN();
-	unsigned char *illu_sts;
+	unsigned char illu_sts[5];
 	char *setILLU = "R_ILLUMINATION";
 	char *resILLU = "S_ILLUMINATION";
 	int slen=1;
@@ -138,7 +138,7 @@ void *illumination_sts( void *arg)
 	while(thread_killer){
 		
 		CreateDbusConnection_Type_Array(buff,1,setILLU);
-		illu_sts = MonitorDbusConnection_Type_Array(slen,resILLU);
+		MonitorDbusConnection_Type_Array(&illu_sts[0],slen,resILLU);
 		if(illu_sts[0] == 1 || illu_sts[0] == 0)
 			gILLU=illu_sts[0];
 		msleep(10);

@@ -1,7 +1,0 @@
-/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/install.dir
-/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/list_install_components.dir
-/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/rebuild_cache.dir
-/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/VariantChanger.dir
-/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/install/strip.dir
-/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/install/local.dir
-/home/muhd_azhari/azhari_task/PowerProcessorIPC/variant/variant_changer/build/CMakeFiles/edit_cache.dir

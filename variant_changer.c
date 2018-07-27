@@ -3,7 +3,7 @@
  * Author : Muhammad Al Azhari 
 */
 #include <variant_changer.h>
-unsigned char *Gdbus_data;
+unsigned char Gdbus_data[5];
 
 void Usage(char *filename) {
 	printf("Usage: %s <file> <string>\n", filename);
@@ -73,16 +73,17 @@ void CreateDbusConnection_Type_Array(unsigned char arr[], int msg_length, char *
 	FUNCTION_OUT();
 }
 
-unsigned char *MonitorDbusConnection_Type_Array(int bufferSize, char *msg_name)
+unsigned char MonitorDbusConnection_Type_Array(unsigned char Buffer[],int bufferSize, char *msg_name)
 {
 	FUNCTION_IN();
 	DBusMessage *message;
 	DBusConnection *connection;
 	DBusError error;
 	dbus_error_init (&error);
-	unsigned char *pBuffer;
 	
-	int i,count,ret;
+	
+	int i,count,counter,ret;
+	unsigned char *pBuffer;
 	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
 	if(!connection)
 	{
@@ -108,56 +109,63 @@ unsigned char *MonitorDbusConnection_Type_Array(int bufferSize, char *msg_name)
    #ifdef DEBUG
    printf("Match rule sent\n");
    #endif
-	 while (count < 10) {
+	 while (count < 100 || counter < 100) {
 
       // non blocking read of the next available message
       dbus_connection_read_write(connection, 0);
       message = dbus_connection_pop_message(connection);
 
       // loop again if we haven't read a message
-      if (NULL == message) { 
-         usleep(100);
-         continue;
-      }
-
-      // check if the message is a signal from the correct interface and with the correct name
-      if (dbus_message_is_signal(message, "clarion.brace.ipc", msg_name)) 
-	  {
-        
-		dbus_message_get_args(message, &error, DBUS_TYPE_ARRAY,DBUS_TYPE_BYTE, &pBuffer, &bufferSize, DBUS_TYPE_INVALID);
-		if (dbus_error_is_set(&error))
-		{
-			fprintf(stderr,"Message arguments are not extracted correctly: %s", error.message);
-			dbus_error_free(&error);
+		if (NULL == message) { 
+			usleep(100);
+			counter++;
+			continue;
 		}
 		else
 		{
-			#ifdef DEBUG
-			printf("Got Signal with value %s\n", pBuffer);
-			printf("pBuffer : ");
-			for(i = 0; i < bufferSize; i++)
+			// check if the message is a signal from the correct interface and with the correct name
+			if (dbus_message_is_signal(message, "clarion.brace.ipc", msg_name)) 
 			{
-				printf("%d | ",pBuffer[i]);
-			}
-			printf("\n");
-			// free the message
-			#endif
-			dbus_message_unref(message);
-			
-			break;
-		}
+				
+				dbus_message_get_args(message, &error, DBUS_TYPE_ARRAY,DBUS_TYPE_BYTE, &pBuffer, &bufferSize, DBUS_TYPE_INVALID);
+				if (dbus_error_is_set(&error))
+				{
+					fprintf(stderr,"Message arguments are not extracted correctly: %s", error.message);
+					dbus_error_free(&error);
+				}
+				else
+				{
+					#ifdef DEBUG
+					printf("Got Signal with value %s\n", pBuffer);
+					printf("pBuffer : ");
+					for(i = 0; i < bufferSize; i++)
+					{
+						printf("%d | ",pBuffer[i]);
+					}
+					printf("\n");
+					// free the message
+					#endif
+					for(i = 0; i < bufferSize; i++)
+					{
+						Buffer[i]=pBuffer[i];
+					}
+					dbus_message_unref(message);
+					
+					break;
+				}
 
-      }
-	  else
-	  {
-		  count++;
-		   #ifdef DEBUG
-		  printf("%s NOT RECEIVE [%d]\n",__func__,count);
-		  #endif
-	  }
+			}
+			else
+			{
+				count++;
+				#ifdef DEBUG
+					printf("%s NOT RECEIVE [%d]\n",__func__,count);
+				#endif
+			}
+		}
+      
    }
    FUNCTION_OUT();
-   return pBuffer;
 }
 
 unsigned char MonitorDbusConnection_Type_Byte(unsigned char clock[],char *msg_name)
@@ -170,7 +178,7 @@ unsigned char MonitorDbusConnection_Type_Byte(unsigned char clock[],char *msg_na
 	unsigned char *Buffer;
 
 	
-	int i,count,ret;
+	int i,count,counter,ret;
 	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
 	if(!connection)
 	{
@@ -196,7 +204,7 @@ unsigned char MonitorDbusConnection_Type_Byte(unsigned char clock[],char *msg_na
    #ifdef DEBUG
    printf("Match rule sent\n");
    #endif
-	 while (count < 10) {
+	 while (count < 10 || counter < 10) {
 
       // non blocking read of the next available message
       dbus_connection_read_write(connection, 0);
@@ -205,55 +213,146 @@ unsigned char MonitorDbusConnection_Type_Byte(unsigned char clock[],char *msg_na
       // loop again if we haven't read a message
       if (NULL == message) { 
          usleep(100);
+		 counter++;
          continue;
-      }
-
-      // check if the message is a signal from the correct interface and with the correct name
-      if (dbus_message_is_signal(message, "clarion.brace.ipc", msg_name)) 
-	  {
-		dbus_message_get_args(message, &error,DBUS_TYPE_BYTE, &clock[0],
-											DBUS_TYPE_BYTE,&clock[1],
-											DBUS_TYPE_BYTE,&clock[2],
-											DBUS_TYPE_BYTE,&clock[3],
-											DBUS_TYPE_BYTE,&clock[4],
-											DBUS_TYPE_BYTE,&clock[5],
-											DBUS_TYPE_BYTE,&clock[6], 
-											DBUS_TYPE_INVALID);
-		if (dbus_error_is_set(&error))
-		{
-			fprintf(stderr,"Message arguments are not extracted correctly: %s", error.message);
-			dbus_error_free(&error);
-		}
-		else
-		{
-			#ifdef DEBUG
-			printf("Buffer : %d:%d:%d %d/%d/%d%d\n",clock[0],clock[1],clock[2],clock[3],clock[4],clock[5],clock[6]);
-			#endif
-			clock[0]=clock[0]+8;
-			switch(clock[0]){
-				case 24:clock[0] = 0;break;
-				case 25:clock[0] = 1;break;
-				case 26:clock[0] = 2;break;
-				case 27:clock[0] = 3;break;
-				case 28:clock[0] = 4;break;
-				case 29:clock[0] = 5;break;
-				case 30:clock[0] = 6;break;
-				case 31:clock[0] = 7;break;
-			};
-			
-			dbus_message_unref(message);
-			break;
-		}
-
       }
 	  else
 	  {
-		  count++;
-		   #ifdef DEBUG
-		  printf("%s NOT RECEIVE [%d]\n",__func__,count);
-		  dbus_message_unref(message);
-		  #endif
+			 // check if the message is a signal from the correct interface and with the correct name
+		  if (dbus_message_is_signal(message, "clarion.brace.ipc", msg_name)) 
+		  {
+			dbus_message_get_args(message, &error,DBUS_TYPE_BYTE, &clock[0],
+												DBUS_TYPE_BYTE,&clock[1],
+												DBUS_TYPE_BYTE,&clock[2],
+												DBUS_TYPE_BYTE,&clock[3],
+												DBUS_TYPE_BYTE,&clock[4],
+												DBUS_TYPE_BYTE,&clock[5],
+												DBUS_TYPE_BYTE,&clock[6], 
+												DBUS_TYPE_INVALID);
+			if (dbus_error_is_set(&error))
+			{
+				fprintf(stderr,"Message arguments are not extracted correctly: %s", error.message);
+				dbus_error_free(&error);
+			}
+			else
+			{
+				#ifdef DEBUG
+				printf("Buffer : %d:%d:%d %d/%d/%d%d\n",clock[0],clock[1],clock[2],clock[3],clock[4],clock[5],clock[6]);
+				#endif
+				clock[0]=clock[0]+8;
+				switch(clock[0]){
+					case 24:clock[0] = 0;break;
+					case 25:clock[0] = 1;break;
+					case 26:clock[0] = 2;break;
+					case 27:clock[0] = 3;break;
+					case 28:clock[0] = 4;break;
+					case 29:clock[0] = 5;break;
+					case 30:clock[0] = 6;break;
+					case 31:clock[0] = 7;break;
+				};
+				
+				dbus_message_unref(message);
+				break;
+			}
+
+		  }
+		  else
+		  {
+			  count++;
+			   #ifdef DEBUG
+			  printf("%s NOT RECEIVE [%d]\n",__func__,count);
+			  dbus_message_unref(message);
+			  #endif
+		  }
 	  }
+      
+   }
+   FUNCTION_OUT();
+
+   return 0;
+}
+
+unsigned char MonitorDbusConnection_Type_Single_Byte(unsigned char data,char *msg_name)
+{
+	FUNCTION_IN();
+	DBusMessage *message;
+	DBusConnection *connection;
+	DBusError error;
+	dbus_error_init (&error);
+	unsigned char *Buffer;
+
+	
+	int i,count,counter,ret;
+	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
+	if(!connection)
+	{
+		dbus_error_free (&error);
+		return;
+	}
+
+
+	// request our name on the bus and check for errors
+   ret = dbus_bus_request_name(connection, "clarion.brace.ipc", DBUS_NAME_FLAG_REPLACE_EXISTING , &error);
+   if (dbus_error_is_set(&error)) { 
+      fprintf(stderr, "Name Error (%s)\n", error.message);
+      dbus_error_free(&error); 
+   }
+
+   // add a rule for which messages we want to see
+   dbus_bus_add_match(connection, "type='signal',interface='clarion.brace.ipc'", &error); // see signals from the given interface
+   dbus_connection_flush(connection);
+   if (dbus_error_is_set(&error)) { 
+      fprintf(stderr, "Match Error (%s)\n", error.message);
+     // exit(1); 
+   }
+   #ifdef DEBUG
+   printf("Match rule sent\n");
+   #endif
+	 while (counter < 10 || count < 10) {
+
+	  // non blocking read of the next available message
+	  dbus_connection_read_write(connection, 0);
+	  message = dbus_connection_pop_message(connection);
+
+	  // loop again if we haven't read a message
+	  if (NULL == message) 
+	  { 
+		 usleep(100);
+		 counter++;
+		 continue;
+	  }
+	  else
+	  {
+			// check if the message is a signal from the correct interface and with the correct name
+		  if (dbus_message_is_signal(message, "clarion.brace.ipc", msg_name)) 
+		  {
+			dbus_message_get_args(message, &error,DBUS_TYPE_BYTE, &data,DBUS_TYPE_INVALID);
+			if (dbus_error_is_set(&error))
+			{
+				fprintf(stderr,"Message arguments are not extracted correctly: %s", error.message);
+				dbus_error_free(&error);
+			}
+			else
+			{
+				#ifdef DEBUG
+					printf("Buffer : %d\n",data);
+				#endif
+				
+				dbus_message_unref(message);
+				break;
+			}
+
+		  }
+		  else
+		  {
+			  count++;
+			  #ifdef DEBUG
+				printf("%s NOT RECEIVE [%d]\n",__func__,count);
+				dbus_message_unref(message);
+			  #endif
+		  }
+	  }
+
    }
    FUNCTION_OUT();
 
@@ -623,7 +722,7 @@ int main( int argc, char **argv)
 	variant_id = get_variant();
 	Sdbus_data[0]=1;
 	CreateDbusConnection_Type_Array(Sdbus_data,glen,setSoftwareVersion_name);
-	Gdbus_data = MonitorDbusConnection_Type_Array(rlen,resSoftwareVersion_name);
+	MonitorDbusConnection_Type_Array(Gdbus_data,rlen,resSoftwareVersion_name);
 	
 		if( oem == -1)
 		{
@@ -697,9 +796,24 @@ int main( int argc, char **argv)
 			
 			
 		}
-		else if(c == '\n' && oem == -1)
+		else if(c == '\n')
 		{
-			//
+			if ( update == 1 )
+			{
+				ret = pp_sw_update();
+				if(ret < 0)
+				{
+					return ret;
+				}
+			}
+			else if(info == 1)
+			{
+				init_ipc_test_app();
+			}
+			else
+			{
+				//
+			}
 		}
 		else
 		{
