@@ -19,6 +19,7 @@ SET(sources 	variant_changer.c
 		variant_changer.h
 		sw_update.c
 		ipc_test_app.c
+		dbus_send_receive.c
    )
 
 #SET(includes 	)

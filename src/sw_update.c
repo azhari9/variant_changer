@@ -89,7 +89,7 @@ int list_files(void)
 				system("clear && printf '\e[3J'");
 				VAR_INFO_Y("=========================================\n");
 				VAR_INFO_C(" WELCOME TO PP SOFTWARE UPDATE INTERFACE\n");
-				VAR_INFO_C("\n  CURRENT PP S/W VERSION: "ANSI_COLOR_MAGENTA"%d.%d\n\n",Gdbus_data[2],Gdbus_data[3]);
+				VAR_INFO_C("\n  CURRENT PP S/W VERSION:: "ANSI_COLOR_MAGENTA"%s : %d.%d\n\n",oem_info,Gdbus_data[2],Gdbus_data[3]);
 				VAR_INFO_R(" USE AT YOUR OWN RISK!!!\n");
 				VAR_INFO_Y("==========================================\n");
 				VAR_INFO_C("_______Available ROM Files at %s_________\n\n",path2);
@@ -111,7 +111,7 @@ int list_files(void)
 			system("clear && printf '\e[3J'");
 			VAR_INFO_Y("=========================================\n");
 			VAR_INFO_C(" WELCOME TO PP SOFTWARE UPDATE INTERFACE\n");
-			VAR_INFO_C("\n  CURRENT PP S/W VERSION: "ANSI_COLOR_MAGENTA"%d.%d\n\n",Gdbus_data[2],Gdbus_data[3]);
+			VAR_INFO_C("\n  CURRENT PP S/W VERSION:: "ANSI_COLOR_MAGENTA"%s : %d.%d\n\n",oem_info,Gdbus_data[2],Gdbus_data[3]);
 			VAR_INFO_R(" USE AT YOUR OWN RISK!!!\n");
 			VAR_INFO_Y("==========================================\n");
 			VAR_INFO_C("_______Available ROM Files at %s_________\n\n",path1 );
@@ -140,11 +140,13 @@ int pp_sw_update(void)
 	//-------
 	char pasword[10],ch;
 	int i;
-
+	
+	lcase(oem_info);
+	
 	system("clear && printf '\e[3J'");
 	VAR_INFO_Y("=========================================\n");
 	VAR_INFO_C(" WELCOME TO PP SOFTWARE UPDATE INTERFACE\n");
-	VAR_INFO_C("\n  CURRENT PP S/W VERSION: "ANSI_COLOR_MAGENTA"%d.%d\n\n",Gdbus_data[2],Gdbus_data[3]);
+	VAR_INFO_C("\n  CURRENT PP S/W VERSION:: "ANSI_COLOR_MAGENTA"%s : %d.%d\n\n",oem_info,Gdbus_data[2],Gdbus_data[3]);
 	VAR_INFO_R(" USE AT YOUR OWN RISK!!!\n");
 	VAR_INFO_Y("==========================================\n\n");
 	
@@ -172,7 +174,7 @@ int pp_sw_update(void)
 
 				VAR_INFO_Y("=========================================\n");
 				VAR_INFO_C(" WELCOME TO PP SOFTWARE UPDATE INTERFACE\n");
-				VAR_INFO_C("\n  CURRENT PP S/W VERSION: "ANSI_COLOR_MAGENTA"%d.%d\n\n",Gdbus_data[2],Gdbus_data[3]);
+				VAR_INFO_C("\n  CURRENT PP S/W VERSION: "ANSI_COLOR_MAGENTA"%s : %d.%d\n\n",oem_info,Gdbus_data[2],Gdbus_data[3]);
 				VAR_INFO_R(" USE AT YOUR OWN RISK!!!\n");
 				VAR_INFO_Y("==========================================\n");
 				VAR_INFO_G("Please put your rom file at this directory /run/media/{sda1 or sdb1}/player.rom  \n\n");
